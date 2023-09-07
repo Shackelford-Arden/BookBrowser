@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/geek1011/BookBrowser/booklist"
-	"github.com/geek1011/BookBrowser/formats"
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/formats"
 	"github.com/moraes/isbn"
 	"github.com/pkg/errors"
 
@@ -18,8 +18,8 @@ import (
 )
 
 type mobi struct {
-	book *booklist.Book
-	coverstart int64
+	book        *booklist.Book
+	coverstart  int64
 	coverlength int64
 }
 
@@ -46,7 +46,7 @@ func (e *mobi) GetCover() (i image.Image, err error) {
 		return nil, errors.Wrap(err, "unable to see to cover offset")
 	}
 
-	ltd := io.LimitReader(f,e.coverlength)
+	ltd := io.LimitReader(f, e.coverlength)
 	if i, _, err = image.Decode(ltd); err != nil {
 		return nil, errors.Wrap(err, "unable to decode book cover")
 	}
@@ -101,7 +101,7 @@ func load(filename string) (bi formats.BookInfo, ferr error) {
 	m.book.Title = r.BestTitle()
 
 	authors := r.Authors()
-	if len(authors)>0 {
+	if len(authors) > 0 {
 		m.book.Author = authors[0]
 	}
 
@@ -109,13 +109,13 @@ func load(filename string) (bi formats.BookInfo, ferr error) {
 	m.book.Publisher = r.Publisher()
 
 	isbnStr := r.Isbn()
-	if len(isbnStr)>0 && isbn.Validate(isbnStr) {
+	if len(isbnStr) > 0 && isbn.Validate(isbnStr) {
 		m.book.ISBN = isbnStr
 	}
 
 	m.book.PublishDate = parsePublishDate(r.PublishingDate())
 
-	if len(m.book.Title)==0 {
+	if len(m.book.Title) == 0 {
 		m.book.Title = filepath.Base(filename)
 	}
 
@@ -153,7 +153,7 @@ func parsePublishDate(s string) time.Time {
 		return time.Time{}
 	}
 
-	t, err := time.Parse(format,s)
+	t, err := time.Parse(format, s)
 	if err != nil {
 		t = time.Time{}
 	}

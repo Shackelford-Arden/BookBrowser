@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/geek1011/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
 
 	"github.com/pkg/errors"
 )
@@ -36,7 +36,7 @@ func Load(filename string) (BookInfo, error) {
 }
 
 func GetExts() []string {
-	exts := []string{}
+	var exts []string
 	for ext := range formats {
 		exts = append(exts, ext)
 	}

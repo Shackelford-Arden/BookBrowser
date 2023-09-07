@@ -51,10 +51,10 @@ func (bl BookList) Take(n int) BookList {
 // - seriesindex-asc
 // - seriesindex-desc
 // - modified-desc
-func (l BookList) SortBy(sort string) (nl BookList, sorted bool) {
+func (bl BookList) SortBy(sort string) (nl BookList, sorted bool) {
 	sort = strings.ToLower(sort)
 
-	nb := l[:]
+	nb := bl[:]
 
 	switch sort {
 	case "author-asc":

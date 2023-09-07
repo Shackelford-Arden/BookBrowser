@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/geek1011/BookBrowser/booklist"
-	"github.com/geek1011/BookBrowser/formats"
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/formats"
 
 	zglob "github.com/mattn/go-zglob"
 	"github.com/nfnt/resize"
@@ -62,10 +62,10 @@ func (i *Indexer) Refresh() ([]error, error) {
 		return errs, errors.New("no paths to index")
 	}
 
-	booklist := booklist.BookList{}
+	theBookList := booklist.BookList{}
 	seen := map[string]bool{}
 
-	filenames := []string{}
+	var filenames []string
 	for _, path := range i.paths {
 		for _, ext := range i.exts {
 			l, err := zglob.Glob(filepath.Join(path, "**", fmt.Sprintf("*.%s", ext)))
@@ -81,21 +81,21 @@ func (i *Indexer) Refresh() ([]error, error) {
 		}
 	}
 
-	for fi, filepath := range filenames {
+	for fi, filePath := range filenames {
 		if i.Verbose {
-			log.Printf("Indexing %s", filepath)
+			log.Printf("Indexing %s", filePath)
 		}
 
-		book, err := i.getBook(filepath)
+		book, err := i.getBook(filePath)
 		if err != nil {
-			errs = append(errs, errors.Wrapf(err, "error reading book '%s'", filepath))
+			errs = append(errs, errors.Wrapf(err, "error reading book '%s'", filePath))
 			if i.Verbose {
 				log.Printf("--> Error: %v", errs[len(errs)-1])
 			}
 			continue
 		}
 		if !seen[book.ID()] {
-			booklist = append(booklist, book)
+			theBookList = append(theBookList, book)
 			seen[book.ID()] = true
 		}
 
@@ -103,7 +103,7 @@ func (i *Indexer) Refresh() ([]error, error) {
 	}
 
 	i.mu.Lock()
-	i.booklist = booklist
+	i.booklist = theBookList
 	i.mu.Unlock()
 
 	return errs, nil

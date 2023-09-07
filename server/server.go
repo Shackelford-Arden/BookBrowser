@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"embed"
 	"fmt"
 	"html/template"
 	"io"
@@ -17,10 +18,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geek1011/BookBrowser/booklist"
-	"github.com/geek1011/BookBrowser/formats"
-	"github.com/geek1011/BookBrowser/indexer"
-	"github.com/geek1011/BookBrowser/public"
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/formats"
+	"github.com/Shackelford-Arden/BookBrowser/indexer"
 	"github.com/geek1011/kepubify/kepub"
 	"github.com/julienschmidt/httprouter"
 	"github.com/unrolled/render"
@@ -28,19 +28,20 @@ import (
 
 // Server is a BookBrowser server.
 type Server struct {
-	Indexer  *indexer.Indexer
-	BookDir  string
-	CoverDir string
-	NoCovers bool
-	Addr     string
-	Verbose  bool
-	router   *httprouter.Router
-	render   *render.Render
-	version  string
+	Indexer     *indexer.Indexer
+	BookDir     string
+	CoverDir    string
+	NoCovers    bool
+	Addr        string
+	Verbose     bool
+	PublicFiles embed.FS
+	router      *httprouter.Router
+	render      *render.Render
+	version     string
 }
 
 // NewServer creates a new BookBrowser server. It will not index the books automatically.
-func NewServer(addr, bookdir, coverdir, version string, verbose, nocovers bool) *Server {
+func NewServer(addr string, bookdir string, coverdir string, version string, verbose, nocovers bool, public embed.FS) *Server {
 	i, err := indexer.New([]string{bookdir}, &coverdir, formats.GetExts())
 	if err != nil {
 		panic(err)
@@ -52,14 +53,15 @@ func NewServer(addr, bookdir, coverdir, version string, verbose, nocovers bool) 
 	}
 
 	s := &Server{
-		Indexer:  i,
-		BookDir:  bookdir,
-		Addr:     addr,
-		CoverDir: coverdir,
-		NoCovers: nocovers,
-		Verbose:  verbose,
-		router:   httprouter.New(),
-		version:  version,
+		Indexer:     i,
+		BookDir:     bookdir,
+		Addr:        addr,
+		CoverDir:    coverdir,
+		NoCovers:    nocovers,
+		Verbose:     verbose,
+		PublicFiles: public,
+		router:      httprouter.New(),
+		version:     version,
 	}
 
 	s.initRender()
@@ -107,9 +109,8 @@ func (s *Server) Serve() error {
 // initRender initializes the renderer for the BookBrowser server.
 func (s *Server) initRender() {
 	s.render = render.New(render.Options{
-		Directory:  "templates",
-		Asset:      public.Box.MustBytes,
-		AssetNames: public.Box.List,
+		Directory:  "public/templates",
+		FileSystem: render.FS(s.PublicFiles),
 		Layout:     "base",
 		Extensions: []string{".tmpl"},
 		Funcs: []template.FuncMap{
@@ -153,9 +154,8 @@ func (s *Server) initRouter() {
 
 	s.router.GET("/download", s.handleDownloads)
 	s.router.GET("/download/:filename", s.handleDownload)
-
 	s.router.GET("/static/*filepath", func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		http.FileServer(public.Box).ServeHTTP(w, req)
+		http.FileServer(http.FS(s.PublicFiles)).ServeHTTP(w, req)
 	})
 	s.router.ServeFiles("/covers/*filepath", http.Dir(s.CoverDir))
 }

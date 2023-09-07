@@ -1,9 +1,11 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/Shackelford-Arden/BookBrowser/models"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -14,24 +16,35 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/geek1011/BookBrowser/formats/epub"
-	_ "github.com/geek1011/BookBrowser/formats/mobi"
-	_ "github.com/geek1011/BookBrowser/formats/pdf"
-	"github.com/geek1011/BookBrowser/server"
-	"github.com/geek1011/BookBrowser/util"
-	"github.com/geek1011/BookBrowser/util/sigusr"
+	_ "github.com/Shackelford-Arden/BookBrowser/formats/epub"
+	_ "github.com/Shackelford-Arden/BookBrowser/formats/mobi"
+	_ "github.com/Shackelford-Arden/BookBrowser/formats/pdf"
+	"github.com/Shackelford-Arden/BookBrowser/server"
+	"github.com/Shackelford-Arden/BookBrowser/util"
+	"github.com/Shackelford-Arden/BookBrowser/util/sigusr"
+	"github.com/kelseyhightower/envconfig"
 	"github.com/spf13/pflag"
 )
 
 var curversion = "dev"
 
+//go:embed public
+var publicFiles embed.FS
+
 func main() {
+
+	var config models.Config
+	configErr := envconfig.Process("bookbrowser", &config)
+	if configErr != nil {
+		log.Fatal(configErr.Error())
+	}
+
 	workdir, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("Fatal error: %s\n", err)
 	}
 
-	deftempdir, err := ioutil.TempDir("", "bookbrowser")
+	deftempdir, err := os.MkdirTemp("", "bookbrowser")
 	if err != nil {
 		deftempdir = filepath.Join(workdir, "_temp")
 	}
@@ -53,7 +66,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Usage: BookBrowser [OPTIONS]\n\nVersion:\n  BookBrowser %s\n\nOptions:\n", curversion)
 		pflag.PrintDefaults()
 		fmt.Fprintf(os.Stderr, "\n")
-		if runtime.GOOS == "windows" {
+		if strings.Contains(runtime.GOOS, "windows") {
 			time.Sleep(time.Second * 2)
 		}
 		os.Exit(1)
@@ -82,7 +95,10 @@ func main() {
 	}
 
 	if _, err := os.Stat(*tempdir); os.IsNotExist(err) {
-		os.Mkdir(*tempdir, os.ModePerm)
+		tmpDirErr := os.Mkdir(*tempdir, os.ModePerm)
+		if tmpDirErr != nil {
+			log.Fatalf("failed to create temporary directory: %s", tmpDirErr)
+		}
 	}
 
 	*tempdir, err = filepath.Abs(*tempdir)
@@ -115,7 +131,7 @@ func main() {
 		}
 	}
 
-	s := server.NewServer(*addr, *bookdir, *tempdir, curversion, true, *nocovers)
+	s := server.NewServer(*addr, *bookdir, *tempdir, curversion, true, *nocovers, publicFiles)
 	go func() {
 		s.RefreshBookIndex()
 		if len(s.Indexer.BookList()) == 0 {
@@ -136,13 +152,13 @@ func main() {
 }
 
 func checkUpdate() {
-	resp, err := http.Get("https://api.github.com/repos/geek1011/BookBrowser/releases/latest")
+	resp, err := http.Get("https://api.github.com/repos/Shackelford-Arden/BookBrowser/releases/latest")
 	if err != nil {
 		return
 	}
 	defer resp.Body.Close()
 
-	buf, err := ioutil.ReadAll(resp.Body)
+	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return
 	}
@@ -158,7 +174,6 @@ func checkUpdate() {
 	if json.Unmarshal(buf, &obj) != nil {
 		return
 	}
-
 	if curversion != "dev" {
 		if !strings.HasPrefix(curversion, obj.Tag) {
 			log.Printf("Running version %s. Latest version is %s: %s\n", curversion, obj.Tag, obj.URL)

@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/geek1011/BookBrowser/booklist"
-	"github.com/geek1011/BookBrowser/formats"
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/formats"
 
 	"time"
 

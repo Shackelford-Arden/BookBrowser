@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
+	"github.com/Shackelford-Arden/BookBrowser/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/formats"
+	"github.com/Shackelford-Arden/BookBrowser/util"
 	"github.com/beevik/etree"
-	"github.com/geek1011/BookBrowser/booklist"
-	"github.com/geek1011/BookBrowser/formats"
-	"github.com/geek1011/BookBrowser/util"
 	"github.com/pkg/errors"
 )
 
