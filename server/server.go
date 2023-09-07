@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -154,9 +155,9 @@ func (s *Server) initRouter() {
 
 	s.router.GET("/download", s.handleDownloads)
 	s.router.GET("/download/:filename", s.handleDownload)
-	s.router.GET("/static/*filepath", func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-		http.FileServer(http.FS(s.PublicFiles)).ServeHTTP(w, req)
-	})
+
+	subPub, _ := fs.Sub(s.PublicFiles, "public/static")
+	s.router.ServeFiles("/static/*filepath", http.FS(subPub))
 	s.router.ServeFiles("/covers/*filepath", http.Dir(s.CoverDir))
 }
 
