@@ -3,6 +3,9 @@ package pdf
 import (
 	"crypto/sha1"
 	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/formats"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/util"
 	"image"
 	"io"
 	"io/ioutil"
@@ -10,9 +13,6 @@ import (
 	"path/filepath"
 	"runtime/debug"
 
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-	"github.com/Shackelford-Arden/BookBrowser/formats"
-	"github.com/Shackelford-Arden/BookBrowser/util"
 	"github.com/beevik/etree"
 	"github.com/pkg/errors"
 )

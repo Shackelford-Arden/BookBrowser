@@ -2,8 +2,13 @@ package server
 
 import (
 	"bytes"
-	"embed"
 	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/formats"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/indexer"
+	"github.com/geek1011/kepubify/kepub"
+	"github.com/julienschmidt/httprouter"
+	"github.com/unrolled/render"
 	"html/template"
 	"io"
 	"io/fs"
@@ -17,14 +22,6 @@ import (
 	"regexp"
 	"runtime/debug"
 	"strings"
-	"time"
-
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-	"github.com/Shackelford-Arden/BookBrowser/formats"
-	"github.com/Shackelford-Arden/BookBrowser/indexer"
-	"github.com/geek1011/kepubify/kepub"
-	"github.com/julienschmidt/httprouter"
-	"github.com/unrolled/render"
 )
 
 // Server is a BookBrowser server.
@@ -35,14 +32,14 @@ type Server struct {
 	NoCovers    bool
 	Addr        string
 	Verbose     bool
-	PublicFiles embed.FS
+	PublicFiles fs.FS
 	router      *httprouter.Router
 	render      *render.Render
 	version     string
 }
 
 // NewServer creates a new BookBrowser server. It will not index the books automatically.
-func NewServer(addr string, bookdir string, coverdir string, version string, verbose, nocovers bool, public embed.FS) *Server {
+func NewServer(addr string, bookdir string, coverdir string, version string, verbose, nocovers bool, public fs.FS) *Server {
 	i, err := indexer.New([]string{bookdir}, &coverdir, formats.GetExts())
 	if err != nil {
 		panic(err)
@@ -115,7 +112,7 @@ func (s *Server) initRender() {
 		Layout:     "base",
 		Extensions: []string{".tmpl"},
 		Funcs: []template.FuncMap{
-			template.FuncMap{
+			{
 				"ToUpper": strings.ToUpper,
 				"raw": func(s string) template.HTML {
 					return template.HTML(s)
@@ -488,7 +485,9 @@ func (s *Server) handleSearch(w http.ResponseWriter, r *http.Request, _ httprout
 }
 
 func (s *Server) handleRandom(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	rand.Seed(time.Now().UnixNano())
+	// As of Go 1.20, I believe this manually seeding is no longer needed
+	// Reference: https://tip.golang.org/doc/go1.20
+	//rand.Seed(time.Now().UnixNano())
 	n := rand.Int() % len(s.Indexer.BookList())
 	http.Redirect(w, r, "/books/"+(s.Indexer.BookList())[n].ID(), http.StatusTemporaryRedirect)
 }

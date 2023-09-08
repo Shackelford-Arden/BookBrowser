@@ -2,18 +2,17 @@ package indexer
 
 import (
 	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/formats"
+	"github.com/mattn/go-zglob"
+	"github.com/pkg/errors"
 	"image/jpeg"
 	"log"
 	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-	"github.com/Shackelford-Arden/BookBrowser/formats"
-
-	zglob "github.com/mattn/go-zglob"
 	"github.com/nfnt/resize"
-	"github.com/pkg/errors"
 )
 
 type Indexer struct {

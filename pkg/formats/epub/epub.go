@@ -4,6 +4,8 @@ import (
 	"archive/zip"
 	"crypto/sha1"
 	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/formats"
 	"image"
 	_ "image/gif"
 	_ "image/png"
@@ -12,9 +14,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-	"github.com/Shackelford-Arden/BookBrowser/formats"
 
 	"time"
 

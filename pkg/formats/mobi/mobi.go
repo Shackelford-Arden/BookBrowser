@@ -3,14 +3,14 @@ package mobi
 import (
 	"crypto/sha1"
 	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/formats"
 	"image"
 	"io"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-	"github.com/Shackelford-Arden/BookBrowser/formats"
 	"github.com/moraes/isbn"
 	"github.com/pkg/errors"
 

@@ -22,8 +22,8 @@ type Book struct {
 	SeriesIndex float64
 	Publisher   string
 
-	ISBN		string
-	PublishDate	time.Time
+	ISBN        string
+	PublishDate time.Time
 }
 
 func (b *Book) ID() string {

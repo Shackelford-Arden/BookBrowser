@@ -1,16 +1,14 @@
 package formats
 
 import (
+	"fmt"
+	"github.com/Shackelford-Arden/BookBrowser/pkg/booklist"
 	"image"
-	"path/filepath"
+	"path"
 	"strings"
-
-	"github.com/Shackelford-Arden/BookBrowser/booklist"
-
-	"github.com/pkg/errors"
 )
 
-var formats = map[string]func(filename string) (BookInfo, error){}
+var supportedFormats = map[string]func(filename string) (BookInfo, error){}
 
 type BookInfo interface {
 	Book() *booklist.Book
@@ -20,24 +18,24 @@ type BookInfo interface {
 
 func Register(ext string, load func(filename string) (BookInfo, error)) {
 	ext = strings.ToLower(ext)
-	if _, ok := formats[ext]; ok {
+	if _, ok := supportedFormats[ext]; ok {
 		panic("attempted to register existing format " + ext)
 	}
-	formats[ext] = load
+	supportedFormats[ext] = load
 }
 
 func Load(filename string) (BookInfo, error) {
-	ext := strings.Replace(filepath.Ext(filename), ".", "", 1)
-	load, ok := formats[strings.ToLower(ext)]
+	ext := strings.Replace(path.Ext(filename), ".", "", 1)
+	load, ok := supportedFormats[strings.ToLower(ext)]
 	if !ok {
-		return nil, errors.Errorf("could not load format %s", ext)
+		return nil, fmt.Errorf("could not load format %s", ext)
 	}
 	return load(filename)
 }
 
 func GetExts() []string {
 	var exts []string
-	for ext := range formats {
+	for ext := range supportedFormats {
 		exts = append(exts, ext)
 	}
 	return exts
